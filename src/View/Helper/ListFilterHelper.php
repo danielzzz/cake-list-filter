@@ -3,7 +3,6 @@ namespace ListFilter\View\Helper;
 
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
 use Cake\View\Helper;
 use Cake\View\StringTemplateTrait;
 
@@ -31,31 +30,31 @@ class ListFilterHelper extends Helper
      * @var array
      */
     protected $_defaultConfig = [
-        'formOptions' => [],
-        'includeJavascript' => true,
-        'templates' => [
+        'formOptions'         => [],
+        'includeJavascript'   => true,
+        'templates'           => [
             'containerStart' => '<div{{attrs}}>',
-            'containerEnd' => '</div>',
-            'toggleButton' => '<a{{attrs}}><i class="fa fa-plus"></i></a>',
-            'header' => '<div class="panel-heading">{{title}}<div class="pull-right">{{toggleButton}}</div></div>',
-            'contentStart' => '<div{{attrs}}>',
-            'contentEnd' => '</div>',
-            'buttons' => '<div class="submit-group">{{buttons}}</div>'
+            'containerEnd'   => '</div>',
+            'toggleButton'   => '<a{{attrs}}><i class="fa fa-plus"></i></a>',
+            'header'         => '', //'<div class="panel-heading">{{title}}<div class="pull-right">{{toggleButton}}</div></div>',
+            'contentStart'   => '<div{{attrs}}>',
+            'contentEnd'     => '</div>',
+            'buttons'        => '<div class="submit-group">{{buttons}}</div>',
         ],
-        'containerClasses' => 'panel panel-default list-filter',
-        'contentClasses' => 'panel-body',
-        'toggleButtonClasses' => 'btn btn-xs toggle-btn',
-        'title' => 'Filter',
+        'containerClasses'    => 'panel panel-default list-filter',
+        'contentClasses'      => 'panel-body',
+        'toggleButtonClasses' => 'btn btn-sm toggle-btn',
+        'title'               => 'Filter',
         'filterButtonOptions' => [
-            'div' => false,
-            'class' => 'btn btn-xs btn-primary'
+            'div'   => false,
+            'class' => 'btn btn-sm btn-info mr-2',
         ],
-        'resetButtonOptions' => [
-            'class' => 'btn btn-default btn-xs',
-            'pass' => [
-                'resetFilters' => true
-            ]
-        ]
+        'resetButtonOptions'  => [
+            'class' => 'btn btn-default btn-sm btn-dark',
+            //'pass' => [
+            //    'resetFilters' => true
+            //]
+        ],
     ];
 
     /**
@@ -94,7 +93,7 @@ class ListFilterHelper extends Helper
 
         $ret = $this->_View->element('ListFilter.wrapper', [
             'filterBox' => $filterBox,
-            'options' => $this->config()
+            'options'   => $this->config(),
         ]);
 
         return $ret;
@@ -118,12 +117,12 @@ class ListFilterHelper extends Helper
         // FIXME allow column-layout to be configured with templates.
         $ret = '<div class="row">';
         foreach ($widgets as $i => $widget) {
-            $ret .= '<div class="col-md-6">';
+            $ret .= '<div class="col-md-3">';
             $ret .= $widget;
             $ret .= '</div>';
-            if (($i + 1) % 2 === 0) {
-                $ret .= '</div><div class="row">';
-            }
+            //if (($i + 1) % 2 === 0) {
+            //    $ret .= '</div><div class="row">';
+            //}
         }
         $ret .= '</div>';
 
@@ -160,7 +159,7 @@ class ListFilterHelper extends Helper
                 $empty = isset($options['inputOptions']['empty']) ? $options['inputOptions']['empty'] : true;
 
                 $fromFieldName = 'Filter.' . $field . '_from';
-                $toFieldName = 'Filter.' . $field . '_to';
+                $toFieldName   = 'Filter.' . $field . '_to';
 
                 if (empty($options['inputOptions']['label'])) {
                     $options['inputOptions']['label'] = $field;
@@ -168,11 +167,11 @@ class ListFilterHelper extends Helper
 
                 $fromOptions = [
                     'label' => $options['inputOptions']['label'] . ' ' . __d('list_filter', 'from'),
-                    'type' => 'date'
+                    'type'  => 'date',
                 ];
                 $toOptions = [
                     'label' => $options['inputOptions']['label'] . ' ' . __d('list_filter', 'to'),
-                    'type' => 'date'
+                    'type'  => 'date',
                 ];
                 if (!empty($options['inputOptions']['from'])) {
                     $fromOptions = Hash::merge($fromOptions, $options['inputOptions']['from']);
@@ -184,7 +183,7 @@ class ListFilterHelper extends Helper
                 if ($empty) {
                     // map the empty option to both option arrays
                     $fromOptions['empty'] = true;
-                    $toOptions['empty'] = true;
+                    $toOptions['empty']   = true;
                     // if the empty option was set, make sure date inputs are not set to the current date by default
                     if (empty($fromOptions['val']) && empty($this->Form->context()->val($fromFieldName))) {
                         $fromOptions['val'] = '';
@@ -199,11 +198,21 @@ class ListFilterHelper extends Helper
                 break;
             case 'multipleselect':
                 $inputOptions = Hash::merge([
-                    'type' => 'select',
-                    'options' => $options['options'],
+                    'type'     => 'select',
+                    'options'  => $options['options'],
                     'multiple' => true,
                 ], $options['inputOptions']);
                 $ret[] = $this->Form->input('Filter.' . $field, $inputOptions);
+                break;
+            case 'select':
+                $inputOptions = Hash::merge([
+                    'type'     => 'select',
+                    'options'  => $options['options'],
+                    'multiple' => false,
+                    'class'    => 'custom-select',
+                ], $options['inputOptions']);
+                $inputOptions['empty'] = '-';
+                $ret[]                 = $this->Form->input('Filter.' . $field, $inputOptions);
                 break;
             default:
                 $inputOptions = Hash::merge([
@@ -238,14 +247,14 @@ class ListFilterHelper extends Helper
 
         $ret = $this->templater()->format('containerStart', [
             'attrs' => $this->templater()->formatAttributes([
-                'class' => $classes
-            ])
+                'class' => $classes,
+            ]),
         ]);
         $ret .= $this->header();
         $ret .= $this->templater()->format('contentStart', [
             'attrs' => $this->templater()->formatAttributes([
-                'class' => $this->config('contentClasses')
-            ])
+                'class' => $this->config('contentClasses'),
+            ]),
         ]);
 
         return $ret;
@@ -272,7 +281,7 @@ class ListFilterHelper extends Helper
     public function openForm()
     {
         $options = Hash::merge(['url' => $this->here], $this->config('formOptions'));
-        $ret = $this->Form->create('Filter', $options);
+        $ret     = $this->Form->create('Filter', $options);
 
         return $ret;
     }
@@ -294,7 +303,7 @@ class ListFilterHelper extends Helper
             $buttons .= ' ' . $this->resetButton();
         }
         $ret = $this->templater()->format('buttons', [
-            'buttons' => $buttons
+            'buttons' => $buttons,
         ]);
         $ret .= $this->Form->end();
 
@@ -309,8 +318,8 @@ class ListFilterHelper extends Helper
     public function header()
     {
         return $this->templater()->format('header', [
-            'title' => $this->config('title'),
-            'toggleButton' => $this->toggleButton()
+            'title'        => $this->config('title'),
+            'toggleButton' => $this->toggleButton(),
         ]);
     }
 
@@ -323,8 +332,8 @@ class ListFilterHelper extends Helper
     {
         return $this->templater()->format('toggleButton', [
             'attrs' => $this->templater()->formatAttributes([
-                'class' => $this->config('toggleButtonClasses')
-            ])
+                'class' => $this->config('toggleButtonClasses'),
+            ]),
         ]);
     }
 
@@ -336,7 +345,7 @@ class ListFilterHelper extends Helper
     public function filterActive()
     {
         $filterActive = (isset($this->_View->viewVars['filterActive'])
-                        && $this->_View->viewVars['filterActive'] === true);
+            && $this->_View->viewVars['filterActive'] === true);
 
         return $filterActive;
     }
@@ -379,8 +388,8 @@ class ListFilterHelper extends Helper
             }
         }
         $options = Hash::merge($this->config('resetButtonOptions'), $options);
-        $url = Hash::merge($this->request->params, [
-            'resetFilter' => true
+        $url     = Hash::merge($this->request->params, [
+            'resetFilter' => true,
         ]);
 
         return $this->Html->link($title, Router::reverse($url), $options);
@@ -415,14 +424,14 @@ class ListFilterHelper extends Helper
     {
         if (empty($url)) {
             $url = [
-                'action' => 'index'
+                'action' => 'index',
             ];
         }
         $options = Hash::merge([
-            'class' => 'btn btn-default btn-xs',
-            'escape' => false,
+            'class'             => 'btn btn-default btn-sm',
+            'escape'            => false,
             'additionalClasses' => null,
-            'useReferer' => false
+            'useReferer'        => false,
         ], $options);
 
         if (!empty($options['useReferer']) && $this->request->referer(true) != '/' && $this->request->referer(true) != $this->request->here) {
